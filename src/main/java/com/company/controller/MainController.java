@@ -1,5 +1,6 @@
 package com.company.controller;
 
+import com.company.util.InlineButtonUtil;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,7 +25,6 @@ public class MainController extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
 
-        // System.out.println(update);
         SendMessage sendMessage = new SendMessage();
         if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
@@ -41,19 +41,27 @@ public class MainController extends TelegramLongPollingBot {
                 editMessageText.setChatId(message.getChatId());
                 editMessageText.setMessageId(message.getMessageId());
 
-                //Second
-                List<InlineKeyboardButton> secondRow = new LinkedList();
-                secondRow.add(new InlineKeyboardButton().setText("secondTest").setCallbackData("Test2"));
+//                //Second
+//                List<InlineKeyboardButton> secondRow = new LinkedList();
+//                secondRow.add(new InlineKeyboardButton().setText("secondTest").setCallbackData("Test2"));
+//
+//                //Row collection
+//                List<List<InlineKeyboardButton>> rowCollection = new LinkedList();
+//                rowCollection.add(secondRow);
+//
+//                //keyboard
+//                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+//                inlineKeyboardMarkup.setKeyboard(rowCollection);
 
-                //Row collection
-                List<List<InlineKeyboardButton>> rowCollection = new LinkedList();
-                rowCollection.add(secondRow);
+                editMessageText.setReplyMarkup(InlineButtonUtil.keyboard(
+                        InlineButtonUtil.collection(
+                                InlineButtonUtil.row(
+                                        InlineButtonUtil.button("Second", "Test2")
+                                )
+                        )
+                ));
 
-                //keyboard
-                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-                inlineKeyboardMarkup.setKeyboard(rowCollection);
-
-                editMessageText.setReplyMarkup(inlineKeyboardMarkup);
+              //  editMessageText.setReplyMarkup(inlineKeyboardMarkup);
 
                 try {
                     execute(editMessageText);

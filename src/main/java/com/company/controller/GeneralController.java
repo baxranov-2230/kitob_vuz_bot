@@ -19,8 +19,6 @@ public class GeneralController {
             sendMessage.setText("Assalomu alaykum");
             sendMessage.setParseMode("Markdown");
 
-            //BUTTON
-            //button
             sendMessage.setReplyMarkup(InlineButtonUtil.keyboard(
                     InlineButtonUtil.collection(
                             InlineButtonUtil.row(
