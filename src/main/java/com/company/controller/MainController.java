@@ -3,37 +3,89 @@ package com.company.controller;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class MainController extends TelegramLongPollingBot {
+    private GeneralController generalController;
+
+    public MainController() {
+        this.generalController = new GeneralController();
+    }
 
     public void onUpdateReceived(Update update) {
-       // System.out.println(update);
 
-        Message message=update.getMessage();
+        // System.out.println(update);
+        SendMessage sendMessage = new SendMessage();
+        if (update.hasCallbackQuery()) {
+            CallbackQuery callbackQuery = update.getCallbackQuery();
 
-        Integer messageId=message.getMessageId();
-        String text=message.getText();
-        User user=message.getFrom();
+            String date = callbackQuery.getData();
+            User user = callbackQuery.getFrom();
+            Message message = callbackQuery.getMessage();
 
-        SendMessage sendMessage=new SendMessage();
-        sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("salom");
+            if (date.equals("menu")) {
+                EditMessageText editMessageText = new EditMessageText();
 
-        if (text.equals("/start")){
-            sendMessage.setText("Salom xush kelibsiz");
+
+                editMessageText.setText("siz menu buttonni click qildingiz");
+                editMessageText.setChatId(message.getChatId());
+                editMessageText.setMessageId(message.getMessageId());
+
+                //Second
+                List<InlineKeyboardButton> secondRow = new LinkedList();
+                secondRow.add(new InlineKeyboardButton().setText("secondTest").setCallbackData("Test2"));
+
+                //Row collection
+                List<List<InlineKeyboardButton>> rowCollection = new LinkedList();
+                rowCollection.add(secondRow);
+
+                //keyboard
+                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+                inlineKeyboardMarkup.setKeyboard(rowCollection);
+
+                editMessageText.setReplyMarkup(inlineKeyboardMarkup);
+
+                try {
+                    execute(editMessageText);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
-            sendMessage.setText("buyruq mavjud emas");
-        }
+
+            Message message = update.getMessage();
+            sendMessage.setChatId(message.getChatId());
+
+            Integer messageId = message.getMessageId();
+            String text = message.getText();
+            User user = message.getFrom();
 
 
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+            if (text.equals("/start") || text.equals("/help") || text.equals("/setting")) {
+                sendMessage = this.generalController.handle(text, message.getChatId(), messageId);
+
+            } else {
+                sendMessage.setText("buyruq mavjud emas");
+            }
+
+
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+
+
         }
     }
 
