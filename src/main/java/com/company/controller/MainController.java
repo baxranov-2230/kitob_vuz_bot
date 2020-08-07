@@ -1,5 +1,6 @@
 package com.company.controller;
 
+import com.company.dto.CodeMessage;
 import com.company.util.InlineButtonUtil;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -29,45 +30,12 @@ public class MainController extends TelegramLongPollingBot {
         if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
 
-            String date = callbackQuery.getData();
+            String data = callbackQuery.getData();
             User user = callbackQuery.getFrom();
             Message message = callbackQuery.getMessage();
 
-            if (date.equals("menu")) {
-                EditMessageText editMessageText = new EditMessageText();
-
-
-                editMessageText.setText("siz menu buttonni click qildingiz");
-                editMessageText.setChatId(message.getChatId());
-                editMessageText.setMessageId(message.getMessageId());
-
-//                //Second
-//                List<InlineKeyboardButton> secondRow = new LinkedList();
-//                secondRow.add(new InlineKeyboardButton().setText("secondTest").setCallbackData("Test2"));
-//
-//                //Row collection
-//                List<List<InlineKeyboardButton>> rowCollection = new LinkedList();
-//                rowCollection.add(secondRow);
-//
-//                //keyboard
-//                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-//                inlineKeyboardMarkup.setKeyboard(rowCollection);
-
-                editMessageText.setReplyMarkup(InlineButtonUtil.keyboard(
-                        InlineButtonUtil.collection(
-                                InlineButtonUtil.row(
-                                        InlineButtonUtil.button("Second", "Test2")
-                                )
-                        )
-                ));
-
-              //  editMessageText.setReplyMarkup(inlineKeyboardMarkup);
-
-                try {
-                    execute(editMessageText);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+            if (data.equals("menu")) {
+                this.sendMsg(this.generalController.handle(data, message.getChatId(), message.getMessageId()));
             }
         } else {
 
@@ -80,20 +48,39 @@ public class MainController extends TelegramLongPollingBot {
 
 
             if (text.equals("/start") || text.equals("/help") || text.equals("/setting")) {
-                sendMessage = this.generalController.handle(text, message.getChatId(), messageId);
+                this.sendMsg(this.generalController.handle(text, message.getChatId(), messageId));
 
             } else {
                 sendMessage.setText("buyruq mavjud emas");
+                this.sendMsg(sendMessage);
             }
 
 
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
+        }
+    }
+
+    public void sendMsg(SendMessage sendMessage) {
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMsg(CodeMessage codeMessage) {
+        try {
+            switch (codeMessage.getType()) {
+                case MESSAGE:
+                    execute(codeMessage.getSendMessage());
+                    break;
+                case EDIT:
+                    execute(codeMessage.getEditMessageText());
+                    break;
+                default:
+                    break;
             }
-
-
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
     }
 
